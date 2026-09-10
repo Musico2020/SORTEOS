@@ -13,10 +13,67 @@ const historyList = document.getElementById("historyList");
 const historyCount = document.getElementById("historyCount");
 const confettiLayer = document.getElementById("confettiLayer");
 
+const drawOverlay = document.getElementById("drawOverlay");
+const overlayNumber = document.getElementById("overlayNumber");
+const overlayLabel = document.getElementById("overlayLabel");
+const overlayHint = document.getElementById("overlayHint");
+const overlayFlash = document.getElementById("overlayFlash");
+
 const CONFETTI_COLORS = ["#e11d2e", "#f4b942", "#1e9e5a", "#ffffff", "#b3121f"];
+const SUSPENSE_HINTS = [
+  "Que no se detenga la suerte…",
+  "El destino ya está decidido…",
+  "Falta muy poco…",
+  "No mires para otro lado…",
+  "Ya casi sale el número…"
+];
 
 let drawnNumbers = [];
 let isRolling = false;
+let audioCtx = null;
+
+function getAudioContext() {
+  if (!audioCtx) {
+    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+    if (AudioCtx) audioCtx = new AudioCtx();
+  }
+  if (audioCtx && audioCtx.state === "suspended") audioCtx.resume();
+  return audioCtx;
+}
+
+function playTick(frequency) {
+  const ctx = getAudioContext();
+  if (!ctx) return;
+  const osc = ctx.createOscillator();
+  const gain = ctx.createGain();
+  osc.type = "square";
+  osc.frequency.value = frequency;
+  gain.gain.setValueAtTime(0.06, ctx.currentTime);
+  gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.09);
+  osc.connect(gain);
+  gain.connect(ctx.destination);
+  osc.start();
+  osc.stop(ctx.currentTime + 0.1);
+}
+
+function playRevealChime() {
+  const ctx = getAudioContext();
+  if (!ctx) return;
+  [523.25, 659.25, 783.99].forEach((freq, i) => {
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = "sine";
+    osc.frequency.value = freq;
+    const startAt = ctx.currentTime + i * 0.12;
+    gain.gain.setValueAtTime(0.0001, startAt);
+    gain.gain.exponentialRampToValueAtTime(0.08, startAt + 0.03);
+    gain.gain.exponentialRampToValueAtTime(0.0001, startAt + 0.5);
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.start(startAt);
+    osc.stop(startAt + 0.55);
+  });
+}
 
 function loadState() {
   try {
@@ -92,6 +149,16 @@ function launchConfetti() {
   }
 }
 
+function easeOutCubic(t) {
+  return 1 - Math.pow(1 - t, 3);
+}
+
+function setControlsEnabled(enabled) {
+  drawBtn.disabled = !enabled || (getAvailableNumbers().length === 0 && noRepeatToggle.checked);
+  resetBtn.disabled = !enabled;
+  noRepeatToggle.disabled = !enabled;
+}
+
 function drawNumber() {
   if (isRolling) return;
 
@@ -101,23 +168,41 @@ function drawNumber() {
     return;
   }
 
+  getAudioContext();
+
   isRolling = true;
-  drawBtn.disabled = true;
+  setControlsEnabled(false);
   display.classList.remove("is-winner");
   display.classList.add("is-rolling");
 
   const finalNumber = available[Math.floor(Math.random() * available.length)];
 
-  const rollDurationMs = 1200;
-  const rollIntervalMs = 60;
+  overlayNumber.classList.remove("is-winner");
+  overlayHint.textContent = SUSPENSE_HINTS[0];
+  overlayLabel.textContent = "Sorteando…";
+  drawOverlay.classList.remove("is-closing");
+  drawOverlay.classList.add("is-active");
+
+  const totalDurationMs = 6500;
+  const minIntervalMs = 45;
+  const maxIntervalMs = 260;
   const startTime = Date.now();
+  let hintIndex = 0;
 
-  const rollTimer = setInterval(() => {
-    const randomDisplay = Math.floor(Math.random() * TOTAL_NUMBERS) + 1;
-    displayNumber.textContent = formatNumber(randomDisplay);
+  function scheduleTick() {
+    const elapsed = Date.now() - startTime;
+    const progress = Math.min(elapsed / totalDurationMs, 1);
 
-    if (Date.now() - startTime >= rollDurationMs) {
-      clearInterval(rollTimer);
+    if (progress >= 1) {
+      overlayNumber.textContent = formatNumber(finalNumber);
+      overlayNumber.classList.add("is-winner");
+      overlayLabel.textContent = "¡Salió el número!";
+      overlayHint.textContent = "Felicidades a quien lo tenga";
+      overlayFlash.classList.remove("is-flashing");
+      void overlayFlash.offsetWidth;
+      overlayFlash.classList.add("is-flashing");
+      drawOverlay.querySelector(".draw-overlay__content").style.transform = "none";
+
       displayNumber.textContent = formatNumber(finalNumber);
       display.classList.remove("is-rolling");
       display.classList.add("is-winner");
@@ -126,11 +211,45 @@ function drawNumber() {
       saveState();
       render();
       launchConfetti();
+      playRevealChime();
+
+      setTimeout(() => {
+        drawOverlay.classList.add("is-closing");
+        setTimeout(() => drawOverlay.classList.remove("is-active", "is-closing"), 400);
+      }, 2200);
 
       isRolling = false;
-      drawBtn.disabled = getAvailableNumbers().length === 0 && noRepeatToggle.checked;
+      setControlsEnabled(true);
+      return;
     }
-  }, rollIntervalMs);
+
+    const randomDisplay = Math.floor(Math.random() * TOTAL_NUMBERS) + 1;
+    const formatted = formatNumber(randomDisplay);
+    displayNumber.textContent = formatted;
+    overlayNumber.textContent = formatted;
+
+    const shakeAmount = 6 * (1 - progress);
+    const offsetX = (Math.random() - 0.5) * shakeAmount;
+    const offsetY = (Math.random() - 0.5) * shakeAmount;
+    drawOverlay.querySelector(".draw-overlay__content").style.transform =
+      `translate(${offsetX}px, ${offsetY}px)`;
+
+    playTick(160 + progress * 260);
+
+    const nextHintIndex = Math.min(
+      SUSPENSE_HINTS.length - 1,
+      Math.floor(progress * SUSPENSE_HINTS.length)
+    );
+    if (nextHintIndex !== hintIndex) {
+      hintIndex = nextHintIndex;
+      overlayHint.textContent = SUSPENSE_HINTS[hintIndex];
+    }
+
+    const delay = minIntervalMs + (maxIntervalMs - minIntervalMs) * easeOutCubic(progress);
+    setTimeout(scheduleTick, delay);
+  }
+
+  scheduleTick();
 }
 
 function resetAll() {

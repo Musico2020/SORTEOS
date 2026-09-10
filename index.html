@@ -12,6 +12,16 @@
 <body>
   <div class="confetti-layer" id="confettiLayer"></div>
 
+  <div class="draw-overlay" id="drawOverlay" aria-hidden="true">
+    <div class="draw-overlay__vignette"></div>
+    <div class="draw-overlay__flash" id="overlayFlash"></div>
+    <div class="draw-overlay__content">
+      <p class="draw-overlay__label" id="overlayLabel">Sorteando…</p>
+      <div class="draw-overlay__number" id="overlayNumber">00</div>
+      <p class="draw-overlay__hint" id="overlayHint">Que no se detenga la suerte…</p>
+    </div>
+  </div>
+
   <div class="app">
     <header class="app__header">
       <div class="rifa-banner-wrap">
