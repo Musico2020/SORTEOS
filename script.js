@@ -75,6 +75,59 @@ function playRevealChime() {
   });
 }
 
+function playCheer() {
+  const ctx = getAudioContext();
+  if (!ctx) return;
+
+  const duration = 2.6;
+  const bufferSize = Math.floor(ctx.sampleRate * duration);
+  const noiseBuffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+  const data = noiseBuffer.getChannelData(0);
+
+  for (let i = 0; i < bufferSize; i++) {
+    data[i] = Math.random() * 2 - 1;
+  }
+
+  const noise = ctx.createBufferSource();
+  noise.buffer = noiseBuffer;
+
+  const bandpass = ctx.createBiquadFilter();
+  bandpass.type = "bandpass";
+  bandpass.frequency.value = 1800;
+  bandpass.Q.value = 0.6;
+
+  const crowdGain = ctx.createGain();
+  const now = ctx.currentTime;
+  crowdGain.gain.setValueAtTime(0.0001, now);
+  crowdGain.gain.exponentialRampToValueAtTime(0.35, now + 0.15);
+  crowdGain.gain.setValueAtTime(0.35, now + 1.4);
+  crowdGain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
+
+  noise.connect(bandpass);
+  bandpass.connect(crowdGain);
+  crowdGain.connect(ctx.destination);
+  noise.start(now);
+  noise.stop(now + duration);
+
+  const whistleCount = 4;
+  for (let i = 0; i < whistleCount; i++) {
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    const startAt = now + 0.1 + Math.random() * 0.6;
+    const peakFreq = 1400 + Math.random() * 900;
+    osc.type = "sine";
+    osc.frequency.setValueAtTime(peakFreq * 0.6, startAt);
+    osc.frequency.exponentialRampToValueAtTime(peakFreq, startAt + 0.35);
+    gain.gain.setValueAtTime(0.0001, startAt);
+    gain.gain.exponentialRampToValueAtTime(0.05, startAt + 0.1);
+    gain.gain.exponentialRampToValueAtTime(0.0001, startAt + 0.8);
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.start(startAt);
+    osc.stop(startAt + 0.85);
+  }
+}
+
 function loadState() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
@@ -212,6 +265,7 @@ function drawNumber() {
       render();
       launchConfetti();
       playRevealChime();
+      playCheer();
 
       setTimeout(() => {
         drawOverlay.classList.add("is-closing");

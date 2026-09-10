@@ -24,34 +24,37 @@
 
   <div class="app">
     <header class="app__header">
-      <div class="rifa-banner-wrap">
-        <img class="rifa-banner" src="rifa-banner.jpg" alt="Rifa de 2 suéteres para pareja">
-      </div>
       <h1>🎲 Sorteo de Números</h1>
       <p class="app__subtitle">Del 01 al 100 — elige uno al azar</p>
     </header>
 
-    <main class="card">
-      <div class="display" id="display">
-        <div class="display__ring"></div>
-        <span class="display__number" id="displayNumber">00</span>
+    <div class="main-row">
+      <div class="rifa-banner-wrap">
+        <img class="rifa-banner" src="rifa-banner.jpg" alt="Rifa de 2 suéteres para pareja">
       </div>
 
-      <button class="btn btn--primary" id="drawBtn">
-        <span id="drawBtnText">Sortear</span>
-      </button>
+      <main class="card">
+        <div class="display" id="display">
+          <div class="display__ring"></div>
+          <span class="display__number" id="displayNumber">00</span>
+        </div>
 
-      <div class="options">
-        <label class="switch">
-          <input type="checkbox" id="noRepeatToggle" checked>
-          <span class="switch__track"><span class="switch__thumb"></span></span>
-          <span class="switch__label">No repetir números ya salidos</span>
-        </label>
-        <button class="btn btn--ghost" id="resetBtn">Reiniciar</button>
-      </div>
+        <button class="btn btn--primary" id="drawBtn">
+          <span id="drawBtnText">Sortear</span>
+        </button>
 
-      <p class="status" id="status">Quedan <strong id="remainingCount">100</strong> números disponibles.</p>
-    </main>
+        <div class="options">
+          <label class="switch">
+            <input type="checkbox" id="noRepeatToggle" checked>
+            <span class="switch__track"><span class="switch__thumb"></span></span>
+            <span class="switch__label">No repetir números ya salidos</span>
+          </label>
+          <button class="btn btn--ghost" id="resetBtn">Reiniciar</button>
+        </div>
+
+        <p class="status" id="status">Quedan <strong id="remainingCount">100</strong> números disponibles.</p>
+      </main>
+    </div>
 
     <section class="history">
       <div class="history__head">
