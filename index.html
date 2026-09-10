@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sorteo de Números</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="app">
+    <header class="app__header">
+      <h1>🎲 Sorteo de Números</h1>
+      <p class="app__subtitle">Del 01 al 100 — elige uno al azar</p>
+    </header>
+
+    <main class="card">
+      <div class="display" id="display">
+        <span class="display__number" id="displayNumber">00</span>
+      </div>
+
+      <button class="btn btn--primary" id="drawBtn">
+        <span id="drawBtnText">Sortear</span>
+      </button>
+
+      <div class="options">
+        <label class="switch">
+          <input type="checkbox" id="noRepeatToggle" checked>
+          <span>No repetir números ya salidos</span>
+        </label>
+        <button class="btn btn--ghost" id="resetBtn">Reiniciar</button>
+      </div>
+
+      <p class="status" id="status">Quedan <strong id="remainingCount">100</strong> números disponibles.</p>
+    </main>
+
+    <section class="history">
+      <div class="history__head">
+        <h2>Historial de sorteos</h2>
+        <span class="history__count" id="historyCount">0</span>
+      </div>
+      <ol class="history__list" id="historyList"></ol>
+    </section>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
