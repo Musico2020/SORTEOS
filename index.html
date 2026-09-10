@@ -4,18 +4,26 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Sorteo de Números</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
+  <div class="confetti-layer" id="confettiLayer"></div>
+
   <div class="app">
     <header class="app__header">
-      <img class="rifa-banner" src="rifa-banner.jpg" alt="Rifa de 2 suéteres para pareja">
+      <div class="rifa-banner-wrap">
+        <img class="rifa-banner" src="rifa-banner.jpg" alt="Rifa de 2 suéteres para pareja">
+      </div>
       <h1>🎲 Sorteo de Números</h1>
       <p class="app__subtitle">Del 01 al 100 — elige uno al azar</p>
     </header>
 
     <main class="card">
       <div class="display" id="display">
+        <div class="display__ring"></div>
         <span class="display__number" id="displayNumber">00</span>
       </div>
 
@@ -26,7 +34,8 @@
       <div class="options">
         <label class="switch">
           <input type="checkbox" id="noRepeatToggle" checked>
-          <span>No repetir números ya salidos</span>
+          <span class="switch__track"><span class="switch__thumb"></span></span>
+          <span class="switch__label">No repetir números ya salidos</span>
         </label>
         <button class="btn btn--ghost" id="resetBtn">Reiniciar</button>
       </div>
@@ -41,6 +50,10 @@
       </div>
       <ol class="history__list" id="historyList"></ol>
     </section>
+
+    <footer class="app__footer">
+      Rifa de 2 suéteres para pareja · se juega el 5 de octubre
+    </footer>
   </div>
 
   <script src="script.js"></script>
